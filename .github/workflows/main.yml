@@ -1,34 +1,55 @@
-# .github/workflows/main.yml
+name: Python CI/CD Pipeline # อัปเดตชื่อ
 
-name: Python CI Pipeline # ชื่อสายพานของเรา
-
-# "Trigger": สั่งให้ทำงาน "เมื่อ" มีการ push โค้ด
+# "Trigger": สั่งให้ทำงาน "เมื่อ" มีการ push
 on: [push]
+
+# "Permissions": (ใหม่!) อนุญาตให้ Action นี้ "เขียน" Package (Docker Image)
+permissions:
+  contents: read
+  packages: write # <-- นี่คือส่วนสำคัญที่เพิ่มเข้ามา
 
 # "Jobs": งานที่จะต้องทำ
 jobs:
-  build-and-test: # ชื่องาน
-    # "Runner": สั่งให้ไปทำงานบนเครื่องเซิร์ฟเวอร์ (ฟรี) ที่เป็น Ubuntu
+  build-and-test:
     runs-on: ubuntu-latest
-
-    # "Steps": ขั้นตอนที่จะทำ (ทำทีละขั้นจากบนลงล่าง)
     steps:
-      # 1. เช็คเอาท์โค้ด (โหลดโค้ดของเราไปที่ Runner)
+      # 1. เช็คเอาท์โค้ด (เหมือนเดิม)
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      # 2. ติดตั้ง Python
+      # 2. ติดตั้ง Python (เหมือนเดิม)
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # 3. ติดตั้ง Dependencies (ในที่นี้คือ pytest สำหรับ test)
+      # 3. ติดตั้ง Dependencies (เหมือนเดิม)
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
+          pip install pytest flask # <-- เพิ่ม flask เข้าไปสำหรับ test env
 
-      # 4. รัน Test! (นี่คือ CI - Continuous Integration)
+      # 4. รัน Test! (เหมือนเดิม)
       - name: Run Pytest
         run: pytest test_app.py
+
+      # ----- 🎉 นี่คือส่วนใหม่ที่เราจะเพิ่ม! 🎉 -----
+      # 5. (ใหม่!) ล็อกอินเข้า "ท่าเรือ" (GitHub Container Registry)
+      - name: Log in to GitHub Container Registry
+        if: github.ref == 'refs/heads/main' # ให้ทำต่อเมื่ออยู่ Branch 'main' เท่านั้น
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }} # Token นี้ GitHub สร้างให้เองอัตโนมัติ
+
+      # 6. (ใหม่!) Build และ Push Docker Image
+      - name: Build and push Docker image
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v5
+        with:
+          push: true # สั่งให้ Push
+          tags: ghcr.io/${{ github.repository }}:latest # ตั้งชื่อ Image เช่น ghcr.io/aunkko-0/my-cicd-test:latest
+          # (ghcr.io คือ "ท่าเรือ" ของ GitHub)
+          # (${{ github.repository }} คือชื่อ repo ของคุณ)
+          # (:latest คือ "ป้าย" ของ Image)
