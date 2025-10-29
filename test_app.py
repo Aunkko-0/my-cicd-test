@@ -7,4 +7,4 @@ def test_add():
     
 # เราจงใจใส่ Bug ใน Test นี้เพื่อให้เห็นว่า CI "Fail" ได้
 def test_add_fail():
-    assert add(1, 1) == 3 # นี่คือ Test ที่จะ "พัง"
+    assert add(1, 1) == 2 # นี่คือ Test ที่จะ "พัง"
