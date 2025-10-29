@@ -49,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true # สั่งให้ Push
-          tags: ghcr.io/${{ github.repository }}:latest # ตั้งชื่อ Image เช่น ghcr.io/aunkko-0/my-cicd-test:latest
+          tags: ghcr.io/aunkko-0/my-cicd-test:latest # พิมพ์ 'a' ตัวเล็ก # ตั้งชื่อ Image เช่น ghcr.io/aunkko-0/my-cicd-test:latest
           # (ghcr.io คือ "ท่าเรือ" ของ GitHub)
           # (${{ github.repository }} คือชื่อ repo ของคุณ)
           # (:latest คือ "ป้าย" ของ Image)
